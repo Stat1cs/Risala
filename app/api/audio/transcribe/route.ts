@@ -50,31 +50,35 @@ export async function POST(request: NextRequest) {
 
     // Use OpenAI Whisper API for transcription
     // Try gpt-4o-mini-transcribe first (better quality), fallback to whisper-1
-    let transcription;
+    let transcription: string;
     try {
-      transcription = await openai.audio.transcriptions.create({
+      const response = await openai.audio.transcriptions.create({
         file: openAIFile,
         model: "gpt-4o-mini-transcribe",
         language: "ar", // Default to Arabic, but model can auto-detect
         response_format: "text",
       });
+      // When response_format is "text", OpenAI returns a string directly
+      transcription = typeof response === "string" ? response : String(response);
     } catch (modelError: unknown) {
       // Fallback to whisper-1 if gpt-4o-mini-transcribe is not available
       const error = modelError as { code?: string; message?: string };
       if (error?.code === "model_not_found" || error?.message?.includes("model")) {
         console.log("gpt-4o-mini-transcribe not available, falling back to whisper-1");
-        transcription = await openai.audio.transcriptions.create({
+        const response = await openai.audio.transcriptions.create({
           file: openAIFile,
           model: "whisper-1",
           language: "ar",
           response_format: "text",
         });
+        // When response_format is "text", OpenAI returns a string directly
+        transcription = typeof response === "string" ? response : String(response);
       } else {
         throw modelError;
       }
     }
 
-    const text = typeof transcription === "string" ? transcription : transcription.text || "";
+    const text = transcription || "";
 
     return NextResponse.json({
       text: text.trim(),
