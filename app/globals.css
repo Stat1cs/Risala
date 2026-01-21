@@ -1,0 +1,624 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-al-marai), var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.488 0.243 264.376);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.546 0.245 262.881);
+  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.42 0.18 266);
+  --primary-foreground: oklch(0.97 0.014 254.604);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.809 0.105 251.813);
+  --chart-2: oklch(0.623 0.214 259.815);
+  --chart-3: oklch(0.546 0.245 262.881);
+  --chart-4: oklch(0.488 0.243 264.376);
+  --chart-5: oklch(0.424 0.199 265.638);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.623 0.214 259.815);
+  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-al-marai), var(--font-sans), sans-serif;
+  }
+  
+  /* Apply AlMarai to all elements except letter canvas */
+  *:not(.letter-canvas):not(.letter-canvas *) {
+    font-family: var(--font-al-marai), var(--font-sans), sans-serif;
+  }
+}
+
+/* Letter Canvas Styles - A4 Official Document Specification */
+
+.letter-canvas {
+  /* A4 dimensions: 210mm × 297mm = 794px × 1123px at 3.78px/mm */
+  width: 794px;
+  min-height: 1123px;
+  height: auto; /* Allow canvas to grow with content */
+  
+  /* Margins: Top 8mm, Bottom 30mm, Left 30mm, Right 25mm */
+  /* Converted: 8mm=30px, 30mm=113px, 25mm=95px (at 3.78px/mm) */
+  padding: 30px 95px 113px 113px;
+  
+  /* Base typography */
+  font-size: 14pt;
+  line-height: 1.8;
+  font-weight: 400;
+  color: #000000;
+  
+  /* Official document styling */
+  background: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  
+  /* Prevent font/style injection */
+  font-family: var(--font-english), 'Georgia', 'Times New Roman', serif;
+  
+  /* Allow canvas to grow beyond one page */
+  overflow: visible;
+  
+  /* Mobile: Scale to fit viewport while maintaining aspect ratio */
+  transform-origin: top center;
+}
+
+/* Mobile responsive scaling - fit entire canvas on screen */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll on mobile */
+  body {
+    overflow-x: hidden;
+  }
+  
+  main {
+    overflow-x: hidden !important;
+  }
+  
+  main > div {
+    overflow-x: hidden;
+  }
+  
+  .letter-canvas-container {
+    width: 100%;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    padding: 0 8px;
+    margin-top: -10px;
+  }
+  
+  .letter-canvas {
+    /* Scale to fit viewport width (with padding) */
+    /* Base width: 794px, viewport padding: 16px total */
+    width: 794px;
+    /* Use CSS custom property for scale calculation */
+    --scale-factor: calc((90vw - 6px) / 794px);
+    transform: scale(var(--scale-factor));
+    transform-origin: top center;
+  }
+}
+
+/* Smaller mobile devices - ensure it fits */
+@media (max-width: 480px) {
+  .letter-canvas {
+  /* Scale factor will be smaller on very small screens */
+  }
+}
+
+/* Mobile responsive scaling for LetterControls */
+@media (max-width: 768px) {
+  .letter-controls-mobile {
+    top: 2px !important;
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+  
+  .letter-controls-container {
+    gap: 0.5rem !important;
+    padding: 0.75rem 0.75rem !important;
+  }
+  
+  .letter-controls-label {
+    font-size: 0.7rem !important;
+  }
+  
+  .letter-controls-input {
+    height: 28px !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .letter-controls-input#purpose {
+    width: 100px !important;
+  }
+  
+  .letter-controls-input#language,
+  .letter-controls-input[id="language"] {
+    width: 140px !important;
+  }
+  
+  .letter-controls-button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.7rem !important;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 480px) {
+  .letter-controls-mobile {
+    transform: scale(0.7);
+    top: 20px !important;
+  }
+  
+  .letter-controls-container {
+    gap: 0.375rem !important;
+    padding: 0.375rem 0.5rem !important;
+  }
+  
+  .letter-controls-input#purpose {
+    width: 85px !important;
+  }
+  
+  .letter-controls-input[id="language"] {
+    width: 120px !important;
+  }
+}
+
+/* Canvas Toolbar positioning */
+.canvas-toolbar {
+  position: absolute;
+}
+
+/* Mobile: Ensure toolbar is visible and properly positioned */
+@media (max-width: 768px) {
+  /* Ensure containers don't clip the toolbar */
+  main > div > div.relative {
+    overflow: visible !important;
+  }
+  
+  .letter-canvas-container {
+    overflow: visible !important;
+  }
+  
+  /* Target both class names to ensure specificity */
+  .canvas-toolbar.mobile-toolbar,
+  .canvas-toolbar {
+    /* Keep absolute positioning relative to the relative container */
+    position: absolute !important;
+    z-index: 50 !important;
+    /* Scale with the canvas - use the same scale factor */
+    --scale-factor: calc((90vw - 6px) / 794px);
+    /* Canvas scales from center, so its visual left edge is at: 50% - (794px * scale) / 2 */
+    /* Position toolbar at the canvas's visual left edge, then scale it */
+    left: calc(50% - 397px * var(--scale-factor) + 0.5rem) !important;
+    top: 25% !important;
+    transform: scale(var(--scale-factor)) translateY(-50%);
+    transform-origin: top left;
+    /* Ensure it's visible */
+    display: flex !important;
+    flex-direction: column !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    /* Ensure background is solid and visible */
+    background: white !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .dark .canvas-toolbar.mobile-toolbar,
+  .dark .canvas-toolbar {
+    background: #1f2937 !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+/* Add spacing between multiple pages */
+.letter-canvas + .letter-canvas {
+  margin-top: 2rem;
+}
+
+.dark .letter-canvas {
+  background: #1f2937;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Date styling - 10pt, weight 400, margin-bottom 20pt */
+.letter-date {
+  font-size: 10pt;
+  font-weight: 400;
+  margin-bottom: 20pt;
+  color: #000000;
+}
+
+.dark .letter-date {
+  color: #ffffff;
+}
+
+.letter-date-input {
+  font-size: 10pt !important;
+  font-weight: 400 !important;
+  line-height: 1.8 !important;
+  caret-color: currentColor !important;
+}
+
+/* Remove rounded corners from text selection in date input */
+.letter-date-input::selection,
+.letter-date-input::-moz-selection {
+  border-radius: 0 !important;
+  -webkit-border-radius: 0 !important;
+}
+
+/* Subject label - 18px, weight 700 */
+.letter-subject-label {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 0;
+  text-transform: none;
+  color: #000000;
+}
+
+.dark .letter-subject-label {
+  color: #ffffff;
+}
+
+/* Subject container - ensure proper RTL alignment */
+.letter-subject-container[dir="rtl"] {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+.letter-subject-container[dir="rtl"] .letter-subject-input {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* Subject line - 15pt, weight 700, margin-top 10pt, margin-bottom 22pt */
+.letter-subject {
+  font-size: 15pt;
+  font-weight: 700;
+  text-transform: none;
+  margin-top: 10pt;
+  margin-bottom: 22pt;
+  color: #000000;
+}
+
+.dark .letter-subject {
+  color: #ffffff;
+}
+
+.letter-subject-input {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.5 !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
+  overflow: hidden !important;
+  caret-color: currentColor !important;
+}
+
+/* Remove rounded corners from text selection in subject input */
+.letter-subject-input::selection,
+.letter-subject-input::-moz-selection {
+  border-radius: 0 !important;
+  -webkit-border-radius: 0 !important;
+}
+
+/* Bismillah image - invert in dark mode */
+.bismillah-image {
+  filter: invert(0);
+  transition: filter 0.2s;
+}
+
+.dark .bismillah-image {
+  filter: invert(1) brightness(1.2);
+}
+
+/* Landing page pricing divider - lighten in dark mode */
+.landing-pricing-divider {
+  border-top-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .landing-pricing-divider {
+  border-top-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Letter content - body text: 14pt, line-height 1.8, weight 400 */
+.letter-content {
+  font-size: 14pt;
+  line-height: 1.8;
+  font-weight: 400;
+  color: #000000;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+  outline: none;
+  transition: color 0.3s ease;
+  
+  /* Paragraph spacing: 10pt after paragraph */
+  margin-bottom: 10pt;
+  
+  /* Prevent style injection */
+  font-style: normal !important;
+  text-decoration: none !important;
+  
+  /* Ensure text wraps within container */
+  max-width: 100%;
+  
+  /* Allow content to overflow and create new pages */
+  overflow: visible;
+  
+  /* Page break handling - allow content to flow naturally */
+  page-break-inside: auto;
+  break-inside: auto;
+  
+  /* Remove max-height restriction - let content flow naturally */
+  /* The canvas will grow, and CSS will handle page breaks in print */
+  
+  /* Ensure consistent caret/cursor size and styling */
+  caret-color: currentColor;
+  /* Force consistent font metrics for caret even when empty */
+  min-height: 1.8em; /* Match line-height */
+}
+
+/* Ensure consistent caret size in empty contentEditable */
+.letter-content:empty {
+  /* Create a zero-width space to maintain font metrics */
+  font-size: 14pt !important;
+  line-height: 1.8 !important;
+}
+
+.dark .letter-content {
+  color: #ffffff;
+}
+
+/* Arabic/RTL styling */
+.letter-content[dir="rtl"],
+.letter-canvas[dir="rtl"] {
+  font-family: var(--font-arabic), 'Noto Naskh Arabic', serif;
+  text-align: right;
+}
+
+.letter-date[dir="rtl"] {
+  text-align: right;
+}
+
+.letter-date[dir="ltr"] {
+  text-align: left;
+}
+
+/* Recipient input styling */
+.letter-recipient-input {
+  line-height: 1.8 !important;
+  caret-color: currentColor !important;
+}
+
+/* Remove rounded corners from text selection in recipient input */
+.letter-recipient-input::selection,
+.letter-recipient-input::-moz-selection {
+  border-radius: 0 !important;
+  -webkit-border-radius: 0 !important;
+}
+
+/* Also remove rounded corners from the input element itself if any */
+.letter-date-input,
+.letter-subject-input,
+.letter-recipient-input {
+  border-radius: 0 !important;
+}
+
+/* Bilingual divider - 1px, color #000000, margin 24pt top/bottom */
+.letter-divider {
+  height: 1px;
+  background-color: #000000;
+  margin-top: 24pt;
+  margin-bottom: 24pt;
+  border: none;
+}
+
+.dark .letter-divider {
+  background-color: #ffffff;
+}
+
+/* ContentEditable safety - prevent style injection */
+.letter-content * {
+  font-style: normal !important;
+  font-weight: inherit !important;
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+/* Print styles - official document print fidelity */
+@media print {
+  .letter-canvas {
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    padding: 15mm 20mm 20mm 20mm !important;
+    page-break-after: always;
+    margin: 0 !important;
+  }
+  
+  .letter-content,
+  .letter-date,
+  .letter-subject,
+  .letter-subject-label {
+    color: #000000 !important;
+  }
+  
+  .letter-divider {
+    background-color: #000000 !important;
+  }
+  
+  /* Force page break when content overflows one page */
+  .letter-content {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  /* Add page break after each full page */
+  .letter-canvas {
+    page-break-after: always;
+    break-after: page;
+  }
+  
+  /* Hide UI controls in print */
+  .letter-controls,
+  .chat-input,
+  .theme-toggle {
+    display: none !important;
+  }
+}
+
+.letter-content:focus {
+  outline: none;
+}
+
+/* Custom Scrollbar Styles */
+@supports (scrollbar-width: thin) {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+}
+
+/* Webkit Scrollbar Styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Bismillah image - invert in dark mode */
+.bismillah-image {
+  filter: invert(0);
+  transition: filter 0.2s;
+}
+
+.dark .bismillah-image {
+  filter: invert(1) brightness(1.2);
+}
