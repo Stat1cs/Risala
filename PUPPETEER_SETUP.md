@@ -44,13 +44,19 @@ This project uses `puppeteer-core` for serverless-friendly PDF generation. This 
 
 ### Vercel
 
-Vercel provides Chrome automatically in their runtime. No additional setup needed!
+Vercel should provide Chrome automatically in their runtime. The code will:
 
-The code will automatically detect Vercel and use `/usr/bin/google-chrome-stable`.
+1. **First try system Chrome** at `/usr/bin/google-chrome-stable`
+2. **Fallback to @sparticuz/chromium** if system Chrome is not found
 
 **Note:** Make sure your deployment package stays under size limits:
 - Hobby: 50 MB (puppeteer-core is ~8 MB ✅)
 - Pro: 250 MB ✅
+
+**If you encounter "Chrome executable not found" errors:**
+- The code will automatically try `@sparticuz/chromium` as a fallback (already installed)
+- If both fail, check Vercel's documentation for the current Chrome path
+- You may need to contact Vercel support if Chrome is no longer provided
 
 ### AWS Lambda
 

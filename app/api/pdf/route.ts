@@ -26,6 +26,16 @@ export async function POST(req: NextRequest) {
     }
 
     if (!launchOptions.executablePath && isServerless) {
+      // On Vercel, try to provide more helpful error message
+      if (process.env.VERCEL) {
+        throw new Error(
+          "Chrome executable not found on Vercel.\n\n" +
+          "Vercel should provide Chrome at /usr/bin/google-chrome-stable.\n" +
+          "If this error persists, Chrome may not be available in your Vercel runtime.\n" +
+          "The code will attempt to use @sparticuz/chromium as a fallback if installed.\n" +
+          "If the issue continues, contact Vercel support."
+        );
+      }
       throw new Error(
         "Chrome executable not found in serverless environment.\n\n" +
         "Please install @sparticuz/chromium: npm install @sparticuz/chromium"
@@ -33,7 +43,50 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`[PDF API] Launching Chrome with executable: ${launchOptions.executablePath || "system"}`);
-    browser = await puppeteer.launch(launchOptions);
+    
+    // Try to launch browser, catch specific errors about executable not found
+    try {
+      browser = await puppeteer.launch(launchOptions);
+    } catch (launchError) {
+      // If launch fails with executable not found error on Vercel, try @sparticuz/chromium as fallback
+      if (process.env.VERCEL && launchError instanceof Error && 
+          (launchError.message.includes("executable") || launchError.message.includes("not found") || 
+           launchError.message.includes("No such file"))) {
+        console.warn(`[PDF API] System Chrome not found, attempting to use @sparticuz/chromium as fallback`);
+        
+        // Try to use @sparticuz/chromium as fallback
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const chromium = require("@sparticuz/chromium");
+          if (typeof chromium.setGraphicsMode !== "undefined") {
+            chromium.setGraphicsMode = false;
+          }
+          
+          const chromiumOptions = {
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+          };
+          
+          console.log(`[PDF API] Using @sparticuz/chromium fallback`);
+          browser = await puppeteer.launch(chromiumOptions);
+        } catch (chromiumError) {
+          // If @sparticuz/chromium also fails, throw the original error with context
+          throw new Error(
+            `Chrome executable not found on Vercel.\n\n` +
+            `Tried system Chrome at: ${launchOptions.executablePath}\n` +
+            `Tried @sparticuz/chromium fallback (also failed)\n\n` +
+            `This may indicate that Vercel's Chrome installation has changed.\n` +
+            `Please check Vercel documentation or contact Vercel support.\n\n` +
+            `Original error: ${launchError.message}\n` +
+            `Chromium fallback error: ${chromiumError instanceof Error ? chromiumError.message : String(chromiumError)}`
+          );
+        }
+      } else {
+        throw launchError;
+      }
+    }
     const page = await browser.newPage();
 
     const html = renderLetterHTML(data);
