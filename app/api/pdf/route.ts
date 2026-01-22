@@ -83,8 +83,12 @@ export async function POST(req: NextRequest) {
     // Use ASCII-only filename to avoid ByteString conversion errors
     const encodedFilename = encodeURIComponent(filename);
     
-    // page.pdf() returns a Buffer (Uint8Array), convert to Blob for NextResponse
-    const pdfBlob = new Blob([pdf], { type: "application/pdf" });
+    // page.pdf() returns a Buffer, convert to ArrayBuffer for Blob
+    // Create a new ArrayBuffer and copy data to ensure proper type compatibility
+    const arrayBuffer = new ArrayBuffer(pdf.length);
+    const view = new Uint8Array(arrayBuffer);
+    view.set(new Uint8Array(pdf));
+    const pdfBlob = new Blob([arrayBuffer], { type: "application/pdf" });
     
     return new NextResponse(pdfBlob, {
       headers: {
