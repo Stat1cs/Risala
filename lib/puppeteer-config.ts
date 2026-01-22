@@ -26,16 +26,13 @@ export function getChromeExecutablePath(): string | undefined {
     return process.env.CHROME_EXECUTABLE_PATH;
   }
 
-  // Vercel/Netlify - ALWAYS use system Chrome
-  // Vercel provides Chrome with all required libraries, so we MUST use it
-  // Do NOT use @sparticuz/chromium on Vercel as it causes libnss3.so errors
-  // Note: existsSync may not work reliably in serverless, so we return the default path
+  // Vercel/Netlify - Use @sparticuz/chromium (Vercel doesn't provide system Chrome)
+  // Note: Vercel serverless functions don't include Chrome by default
+  // We'll use @sparticuz/chromium which is configured in getPuppeteerLaunchOptions
   if (process.env.VERCEL || process.env.NETLIFY) {
-    // Vercel provides Chrome at /usr/bin/google-chrome-stable
-    // We return this path directly without checking existsSync since it may not work in serverless
-    const defaultPath = "/usr/bin/google-chrome-stable";
-    console.log(`[Puppeteer] Using Chrome path for Vercel/Netlify: ${defaultPath}`);
-    return defaultPath;
+    // Return undefined to trigger @sparticuz/chromium usage
+    // This will be handled in getPuppeteerLaunchOptions
+    return undefined;
   }
 
   // For AWS Lambda, use @sparticuz/chromium if available
@@ -99,59 +96,88 @@ export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOption
   // Get system Chrome path first
   let executablePath = getChromeExecutablePath();
   
-  // On Vercel, try to verify Chrome exists, or try alternative paths
-  if (isVercel) {
-    // Try multiple possible Chrome paths on Vercel
-    const possibleVercelPaths = [
-      "/usr/bin/google-chrome-stable",
-      "/usr/bin/google-chrome",
-      "/usr/bin/chromium-browser",
-      "/usr/bin/chromium",
-      // Sometimes Chrome is in a different location
-      "/opt/google/chrome/chrome",
-      "/usr/local/bin/google-chrome-stable",
-    ];
-    
-    // If we have a path from getChromeExecutablePath, verify it exists
-    // Otherwise, try the possible paths
-    if (!executablePath) {
-      // Try to find Chrome in common Vercel locations
-      for (const path of possibleVercelPaths) {
-        try {
-          // In serverless, we can't reliably use existsSync, so we'll try launching
-          // But first, let's try the most common path
-          executablePath = path;
-          console.log(`[Puppeteer] Attempting to use Chrome path: ${path}`);
-          break; // Use the first path (most common)
-        } catch {
-          continue;
-        }
-      }
-    }
-    
-    // If still no path, use the default
-    if (!executablePath) {
-      executablePath = "/usr/bin/google-chrome-stable";
-      console.log(`[Puppeteer] Using default Vercel Chrome path: ${executablePath}`);
-    }
-  }
-  
-  // For AWS Lambda or Vercel (if system Chrome not available), use @sparticuz/chromium if available
-  // Note: On Vercel, prefer system Chrome, but fallback to @sparticuz/chromium if needed
-  const shouldUseChromium = (isLambda || (isVercel && !executablePath)) && chromium;
+  // For Vercel/Netlify and AWS Lambda, use @sparticuz/chromium
+  // Vercel doesn't provide system Chrome in serverless functions
+  const shouldUseChromium = (isVercel || isNetlify || isLambda) && chromium;
   
   if (shouldUseChromium) {
-    // Disable graphics for serverless (setGraphicsMode is a property, not a function)
-    if (typeof chromium.setGraphicsMode !== "undefined") {
-      chromium.setGraphicsMode = false;
+    // Configure chromium for serverless environments
+    // For newer versions of @sparticuz/chromium, configure it properly
+    try {
+      // Disable graphics for serverless (setGraphicsMode is a property, not a function)
+      if (typeof chromium.setGraphicsMode !== "undefined") {
+        chromium.setGraphicsMode = false;
+      }
+      
+      // For Vercel, configure chromium to avoid library issues
+      if (isVercel) {
+        // Try to set fonts to false if the property exists (newer versions)
+        if (typeof chromium.setFonts !== "undefined") {
+          chromium.setFonts = false;
+        }
+        // Some versions use setFontPath
+        if (typeof chromium.setFontPath !== "undefined") {
+          chromium.setFontPath = undefined;
+        }
+      }
+      
+      console.log(`[Puppeteer] Using @sparticuz/chromium for ${isVercel ? 'Vercel' : isNetlify ? 'Netlify' : 'Lambda'}`);
+      
+      // Get chromium executable path - this may download/unpack chromium if needed
+      // For newer versions, this handles the binary extraction automatically
+      const chromiumPath = await chromium.executablePath();
+      console.log(`[Puppeteer] Chromium executable path: ${chromiumPath}`);
+      
+      // Use chromium args with additional serverless-friendly flags
+      // Start with chromium's default args and add our own
+      const chromiumArgs = [
+        ...chromium.args,
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--disable-gpu",
+        "--single-process",
+        "--disable-software-rasterizer",
+        "--disable-extensions",
+        "--disable-background-networking",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-breakpad",
+        "--disable-client-side-phishing-detection",
+        "--disable-default-apps",
+        "--disable-features=TranslateUI",
+        "--disable-hang-monitor",
+        "--disable-ipc-flooding-protection",
+        "--disable-popup-blocking",
+        "--disable-prompt-on-repost",
+        "--disable-renderer-backgrounding",
+        "--disable-sync",
+        "--disable-translate",
+        "--metrics-recording-only",
+        "--safebrowsing-disable-auto-update",
+        "--enable-automation",
+        "--password-store=basic",
+        "--use-mock-keychain",
+      ];
+      
+      return {
+        args: chromiumArgs,
+        defaultViewport: chromium.defaultViewport || { width: 1920, height: 1080 },
+        executablePath: chromiumPath,
+        headless: chromium.headless !== false, // Default to true
+        ignoreHTTPSErrors: true, // Important for serverless
+      };
+    } catch (chromiumError) {
+      console.error(`[Puppeteer] Failed to configure @sparticuz/chromium:`, chromiumError);
+      throw new Error(
+        `Failed to initialize @sparticuz/chromium: ${chromiumError instanceof Error ? chromiumError.message : String(chromiumError)}\n\n` +
+        `This may indicate that @sparticuz/chromium needs to be updated or Vercel's runtime doesn't support it.\n` +
+        `Try updating @sparticuz/chromium: npm install @sparticuz/chromium@latest\n\n` +
+        `If the issue persists, consider using a PDF service API instead of Puppeteer.`
+      );
     }
-    console.log(`[Puppeteer] Using @sparticuz/chromium as fallback for ${isVercel ? 'Vercel' : 'Lambda'}`);
-    return {
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    };
   }
 
   // On Netlify, ensure we have an executablePath

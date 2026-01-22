@@ -44,19 +44,39 @@ This project uses `puppeteer-core` for serverless-friendly PDF generation. This 
 
 ### Vercel
 
-Vercel should provide Chrome automatically in their runtime. The code will:
+Vercel **does not provide Chrome** in serverless functions by default. The code uses `@sparticuz/chromium` which is already installed.
 
-1. **First try system Chrome** at `/usr/bin/google-chrome-stable`
-2. **Fallback to @sparticuz/chromium** if system Chrome is not found
+**Required Setup:**
+
+1. **Install latest version:**
+   ```bash
+   npm install @sparticuz/chromium@latest
+   ```
+
+2. **Set Environment Variable:**
+   - Go to Vercel Dashboard → Project Settings → Environment Variables
+   - Add: `AWS_LAMBDA_JS_RUNTIME` = `nodejs22.x`
+   - Apply to: Production, Preview, Development
+
+3. **Function Configuration:**
+   - Memory: At least 512 MB (recommended: 1024 MB)
+   - Max Duration: At least 30 seconds (recommended: 60 seconds)
+
+**How it works:**
+- The code automatically uses `@sparticuz/chromium` on Vercel
+- Chromium is configured with serverless-friendly flags
+- All necessary launch arguments are set automatically
+- Next.js config externalizes the packages to avoid bundling issues
 
 **Note:** Make sure your deployment package stays under size limits:
-- Hobby: 50 MB (puppeteer-core is ~8 MB ✅)
+- Hobby: 50 MB (puppeteer-core + @sparticuz/chromium may be close to limit)
 - Pro: 250 MB ✅
 
-**If you encounter "Chrome executable not found" errors:**
-- The code will automatically try `@sparticuz/chromium` as a fallback (already installed)
-- If both fail, check Vercel's documentation for the current Chrome path
-- You may need to contact Vercel support if Chrome is no longer provided
+**If you encounter `libnss3.so` errors:**
+- Ensure `AWS_LAMBDA_JS_RUNTIME=nodejs22.x` is set in environment variables
+- Update to latest `@sparticuz/chromium` version (v141.0.0+)
+- Check Vercel function logs for detailed error messages
+- See `VERCEL_ENV_SETUP.md` for detailed troubleshooting
 
 ### AWS Lambda
 
