@@ -8,17 +8,28 @@ export async function POST(req: NextRequest) {
 
   let browser;
   try {
-    const launchOptions = getPuppeteerLaunchOptions();
+    const launchOptions = await getPuppeteerLaunchOptions();
     
-    // If no executable path found, throw helpful error
-    if (!launchOptions.executablePath && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    // Check if executable path is available
+    const isServerless = process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+    
+    if (!launchOptions.executablePath && !isServerless) {
       const errorMsg = 
         "Chrome/Chromium executable not found.\n\n" +
         "Please install Google Chrome or set CHROME_EXECUTABLE_PATH environment variable.\n" +
         "For local development, install Chrome from https://www.google.com/chrome/\n\n" +
         "If Chrome is installed in a custom location, create a .env.local file with:\n" +
-        "CHROME_EXECUTABLE_PATH=C:\\Path\\To\\Chrome\\chrome.exe";
+        "CHROME_EXECUTABLE_PATH=C:\\Path\\To\\Chrome\\chrome.exe\n\n" +
+        "For Vercel/Netlify deployment, install @sparticuz/chromium:\n" +
+        "npm install @sparticuz/chromium";
       throw new Error(errorMsg);
+    }
+
+    if (!launchOptions.executablePath && isServerless) {
+      throw new Error(
+        "Chrome executable not found in serverless environment.\n\n" +
+        "Please install @sparticuz/chromium: npm install @sparticuz/chromium"
+      );
     }
 
     console.log(`[PDF API] Launching Chrome with executable: ${launchOptions.executablePath || "system"}`);

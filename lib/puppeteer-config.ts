@@ -8,6 +8,15 @@ import type { LaunchOptions } from "puppeteer-core";
 
 export type PuppeteerLaunchOptions = LaunchOptions;
 
+// Try to import @sparticuz/chromium for serverless environments
+let chromium: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  chromium = require("@sparticuz/chromium");
+} catch {
+  // @sparticuz/chromium not installed, will use system Chrome
+}
+
 /**
  * Get Chrome/Chromium executable path based on environment
  */
@@ -17,17 +26,37 @@ export function getChromeExecutablePath(): string | undefined {
     return process.env.CHROME_EXECUTABLE_PATH;
   }
 
-  // For serverless platforms, Chrome should be provided via layers/packages
-  // AWS Lambda with @sparticuz/chromium
-  if (process.env.AWS_LAMBDA_FUNCTION_NAME) {
-    // Will be set by @sparticuz/chromium
+  // For serverless platforms, use @sparticuz/chromium if available
+  const isServerless = process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+  
+  if (isServerless && chromium) {
+    // @sparticuz/chromium will provide the executable path
+    // Return undefined here, the executable path will be set in getPuppeteerLaunchOptions
     return undefined;
   }
 
-  // Vercel/Netlify - Chrome should be available in PATH
+  // Vercel/Netlify - Try to find Chrome in common paths
   if (process.env.VERCEL || process.env.NETLIFY) {
-    // Chrome is typically at /usr/bin/google-chrome-stable on Vercel
-    return "/usr/bin/google-chrome-stable";
+    // Try common paths
+    const possiblePaths = [
+      "/usr/bin/google-chrome-stable",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium-browser",
+      "/usr/bin/chromium",
+    ];
+    
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        console.log(`[Puppeteer] Found Chrome at: ${path}`);
+        return path;
+      }
+    }
+    
+    // If not found and @sparticuz/chromium is not available, log warning
+    if (!chromium) {
+      console.warn("[Puppeteer] Chrome not found and @sparticuz/chromium not installed. Consider installing: npm install @sparticuz/chromium");
+    }
+    return undefined;
   }
 
   // Local development - try common paths
@@ -75,10 +104,22 @@ export function getChromeExecutablePath(): string | undefined {
 /**
  * Get Puppeteer launch options for current environment
  */
-export function getPuppeteerLaunchOptions(): PuppeteerLaunchOptions {
-  const executablePath = getChromeExecutablePath();
+export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOptions> {
   const isServerless = process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+  
+  // Use @sparticuz/chromium for serverless if available
+  if (isServerless && chromium) {
+    chromium.setGraphicsMode(false); // Disable graphics for serverless
+    return {
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    };
+  }
 
+  // Fallback to system Chrome
+  const executablePath = getChromeExecutablePath();
   const args = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
