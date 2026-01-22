@@ -89,7 +89,11 @@ export function useLetterState(
   }, []);
 
   const recipient = useMemo(
-    () => formatRecipient(data),
+    () => formatRecipient({
+      recipientTitle: data.recipientTitle,
+      recipientName: data.recipientName,
+      recipientOrganization: data.recipientOrganization,
+    }),
     [data.recipientTitle, data.recipientName, data.recipientOrganization]
   );
 

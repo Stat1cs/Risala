@@ -159,6 +159,7 @@ function HomeContent() {
           subject: newSubject,
           signature: letterSignature,
           closing: letterClosing,
+          language: letterLanguage,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -587,7 +588,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-blue-50 via-blue-100 to-indigo-50 dark:from-gray-900 dark:via-blue-950 dark:to-indigo-950 transition-colors duration-300">
         <div className="text-muted-foreground">Loading...</div>
       </div>
     }>

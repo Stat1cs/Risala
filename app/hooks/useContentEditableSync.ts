@@ -9,7 +9,7 @@ interface UseContentEditableSyncOptions {
 }
 
 interface UseContentEditableSyncReturn {
-  contentEditableRef: React.RefObject<HTMLDivElement>;
+  contentEditableRef: React.RefObject<HTMLDivElement | null>;
   handleContentChange: () => void;
   handleKeyDown: () => void;
   handlePaste: (e: React.ClipboardEvent<HTMLDivElement>) => void;

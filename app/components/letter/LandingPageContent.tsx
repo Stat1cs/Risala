@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { formatArabicDate } from "@/lib/date-utils";
 import type { UiLanguage } from "@/lib/types/letter";
 
@@ -85,16 +86,19 @@ export function LandingPageContent({ uiLanguage }: LandingPageContentProps) {
             alignItems: "center",
           }}
         >
-          <img
+          <Image
             src="/Font/bismillah.svg"
             alt="بسم الله الرحمن الرحيم"
             className="bismillah-image"
+            width={200}
+            height={100}
             style={{
               maxWidth: "100%",
               height: "auto",
               maxHeight: "100px",
               objectFit: "contain",
             }}
+            priority
           />
         </div>
       )}

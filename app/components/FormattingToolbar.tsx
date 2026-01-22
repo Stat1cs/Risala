@@ -88,7 +88,7 @@ export function FormattingToolbar({ contentEditableRef }: FormattingToolbarProps
     
     try {
       range.surroundContents(span);
-    } catch (e) {
+    } catch {
       // If surroundContents fails, extract content and wrap it
       const contents = range.extractContents();
       span.appendChild(contents);
@@ -113,7 +113,7 @@ export function FormattingToolbar({ contentEditableRef }: FormattingToolbarProps
     { label: "24pt", value: "24pt" },
   ];
 
-  if (!isVisible || !contentEditableRef.current) {
+  if (!isVisible) {
     return null;
   }
 

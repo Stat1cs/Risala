@@ -8,14 +8,6 @@ import { useLetterHistory } from "../../hooks/useLetterHistory";
 import { useLetterState } from "../../hooks/useLetterState";
 import type { LetterState } from "@/lib/types/letter";
 
-interface UseLetterStateManagerReturn {
-  letterState: ReturnType<typeof useLetterState>;
-  history: ReturnType<typeof useLetterHistory>;
-  handleUndo: () => void;
-  handleRedo: () => void;
-  updateFromHistory: (state: LetterState | null) => void;
-}
-
 export function useLetterStateManager() {
   const letterState = useLetterState();
   const history = useLetterHistory({ maxHistorySize: 5 });
@@ -30,6 +22,9 @@ export function useLetterStateManager() {
       letterState.setRecipientName(state.recipientName);
       letterState.setRecipientOrganization(state.recipientOrganization);
       letterState.setSubject(state.subject);
+      if (state.language) {
+        letterState.setLanguage(state.language);
+      }
       if (state.signature !== undefined) {
         letterState.setSignature(state.signature);
       }

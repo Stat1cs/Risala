@@ -3,7 +3,7 @@
  * Handles API calls and state updates for letter generation
  */
 
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import type { LetterPurpose, Language, LetterLanguage } from "@/lib/types/letter";
 import type { LetterData } from "@/lib/types/letter";
 import { formatArabicDate, formatEnglishDate } from "@/lib/date-utils";
@@ -97,7 +97,7 @@ export function useLetterGenerator(
         setIsLoading(false);
       }
     },
-    [purpose, language, letterLanguage, onUpdate, onAddToHistory]
+    [purpose, language, letterLanguage, onUpdate, onAddToHistory, currentData]
   );
 
   const handleSendMessage = useCallback(

@@ -52,15 +52,6 @@ export function SaveLoadDialog({
 
   const isRTL = uiLanguage === "ar";
 
-  useEffect(() => {
-    if (isOpen) {
-      loadSavedLetters();
-      if (mode === "save" && currentLetterData?.subject) {
-        setSaveName(currentLetterData.subject.substring(0, 50));
-      }
-    }
-  }, [isOpen, mode, currentLetterData]);
-
   const loadSavedLetters = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -75,6 +66,15 @@ export function SaveLoadDialog({
       setSavedLetters([]);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadSavedLetters();
+      if (mode === "save" && currentLetterData?.subject) {
+        setSaveName(currentLetterData.subject.substring(0, 50));
+      }
+    }
+  }, [isOpen, mode, currentLetterData]);
 
   const handleSave = () => {
     if (!saveName.trim() || !currentLetterData || !onSave) return;
@@ -157,6 +157,7 @@ export function SaveLoadDialog({
               }
             }
           } catch (error) {
+            console.error("Error importing letter:", error);
             alert(uiLanguage === "ar" ? "ملف غير صالح" : "Invalid file");
           }
         };

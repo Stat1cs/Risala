@@ -19,9 +19,7 @@ export interface LetterData {
   language: LetterLanguage;
 }
 
-export interface LetterState extends LetterData {
-  // Additional state fields if needed
-}
+export type LetterState = LetterData;
 
 export interface LetterFormattedRecipient {
   full: string;

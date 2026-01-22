@@ -2,6 +2,8 @@
  * Bismillah field component
  */
 
+import Image from "next/image";
+
 interface BismillahFieldProps {
   show?: boolean;
 }
@@ -20,16 +22,19 @@ export function BismillahField({ show = true }: BismillahFieldProps) {
         alignItems: "center",
       }}
     >
-      <img
+      <Image
         src="/Font/bismillah.svg"
         alt="بسم الله الرحمن الرحيم"
         className="bismillah-image"
+        width={200}
+        height={100}
         style={{
           maxWidth: "100%",
           height: "auto",
           maxHeight: "100px",
           objectFit: "contain",
         }}
+        priority
       />
     </div>
   );

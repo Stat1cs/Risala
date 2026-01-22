@@ -1,15 +1,5 @@
 import { useState, useCallback } from "react";
-
-export interface LetterState {
-  content: string;
-  date: string;
-  recipientTitle: string;
-  recipientName: string;
-  recipientOrganization: string;
-  subject: string;
-  signature?: string;
-  closing?: string;
-}
+import type { LetterState } from "@/lib/types/letter";
 
 interface UseLetterHistoryOptions {
   maxHistorySize?: number;

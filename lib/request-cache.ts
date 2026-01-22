@@ -11,7 +11,7 @@ interface CacheEntry<T> {
 }
 
 // In-memory cache store
-const cacheStore = new Map<string, CacheEntry<any>>();
+const cacheStore = new Map<string, CacheEntry<unknown>>();
 
 /**
  * Generate cache key from request data
@@ -95,7 +95,7 @@ export const CACHE_CONFIG = {
  * Request deduplication
  * Prevents multiple identical requests from executing concurrently
  */
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 /**
  * Execute request with deduplication
@@ -108,7 +108,7 @@ export async function withDeduplication<T>(
   // Check if request is already pending
   const pending = pendingRequests.get(key);
   if (pending) {
-    return pending;
+    return pending as Promise<T>;
   }
 
   // Create new request

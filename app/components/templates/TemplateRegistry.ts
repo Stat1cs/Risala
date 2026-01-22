@@ -1,5 +1,8 @@
 import { TemplateLayout, TemplateId } from "./TemplateTypes";
 
+// Re-export TemplateId for convenience
+export type { TemplateId };
+
 /**
  * Template Registry
  * Defines the layout structure for each template type
