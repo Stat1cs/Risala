@@ -26,17 +26,9 @@ export function getChromeExecutablePath(): string | undefined {
     return process.env.CHROME_EXECUTABLE_PATH;
   }
 
-  // For serverless platforms, use @sparticuz/chromium if available
-  const isServerless = process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
-  
-  if (isServerless && chromium) {
-    // @sparticuz/chromium will provide the executable path
-    // Return undefined here, the executable path will be set in getPuppeteerLaunchOptions
-    return undefined;
-  }
-
-  // Vercel/Netlify - Try to find Chrome in common paths first
-  // Vercel provides Chrome, so prefer system Chrome over @sparticuz/chromium
+  // Vercel/Netlify - ALWAYS try to find system Chrome first
+  // Vercel provides Chrome with all required libraries, so we MUST use it
+  // Do NOT use @sparticuz/chromium on Vercel as it causes libnss3.so errors
   if (process.env.VERCEL || process.env.NETLIFY) {
     // Try common paths - Vercel typically has Chrome at these locations
     const possiblePaths = [
@@ -54,11 +46,16 @@ export function getChromeExecutablePath(): string | undefined {
       }
     }
     
-    // If not found and @sparticuz/chromium is not available, log warning
-    if (!chromium) {
-      console.warn("[Puppeteer] Chrome not found and @sparticuz/chromium not installed. Consider installing: npm install @sparticuz/chromium");
-    }
-    // Return undefined to allow @sparticuz/chromium fallback
+    // On Vercel, if Chrome is not found, log error (should not happen)
+    console.error("[Puppeteer] Chrome not found on Vercel/Netlify. This should not happen.");
+    // Still return undefined to allow fallback, but this is unexpected
+    return undefined;
+  }
+
+  // For AWS Lambda, use @sparticuz/chromium if available
+  if (process.env.AWS_LAMBDA_FUNCTION_NAME && chromium) {
+    // @sparticuz/chromium will provide the executable path
+    // Return undefined here, the executable path will be set in getPuppeteerLaunchOptions
     return undefined;
   }
 
@@ -113,14 +110,12 @@ export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOption
   const isLambda = process.env.AWS_LAMBDA_FUNCTION_NAME;
   const isServerless = isVercel || isNetlify || isLambda;
   
-  // For Vercel, prefer system Chrome over @sparticuz/chromium
-  // Vercel provides Chrome with all required libraries
+  // Get system Chrome path first
   const executablePath = getChromeExecutablePath();
   
-  // Only use @sparticuz/chromium if:
-  // 1. We're on AWS Lambda (not Vercel/Netlify)
-  // 2. OR system Chrome is not found AND @sparticuz/chromium is available
-  const shouldUseChromium = (isLambda || (!executablePath && chromium)) && chromium;
+  // NEVER use @sparticuz/chromium on Vercel/Netlify - it causes libnss3.so errors
+  // Only use @sparticuz/chromium on AWS Lambda
+  const shouldUseChromium = isLambda && chromium && !executablePath;
   
   if (shouldUseChromium) {
     // Disable graphics for serverless (setGraphicsMode is a property, not a function)
@@ -133,6 +128,15 @@ export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOption
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     };
+  }
+
+  // On Vercel/Netlify, we MUST have an executablePath (system Chrome)
+  if ((isVercel || isNetlify) && !executablePath) {
+    throw new Error(
+      "Chrome executable not found on Vercel/Netlify. " +
+      "Vercel should provide Chrome at /usr/bin/google-chrome-stable. " +
+      "If this error persists, contact Vercel support."
+    );
   }
 
   // Use system Chrome (preferred for Vercel/Netlify)
