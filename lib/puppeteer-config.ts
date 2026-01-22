@@ -109,7 +109,10 @@ export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOption
   
   // Use @sparticuz/chromium for serverless if available
   if (isServerless && chromium) {
-    chromium.setGraphicsMode(false); // Disable graphics for serverless
+    // Disable graphics for serverless (setGraphicsMode is a property, not a function)
+    if (typeof chromium.setGraphicsMode !== "undefined") {
+      chromium.setGraphicsMode = false;
+    }
     return {
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
