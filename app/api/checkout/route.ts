@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     // });
 
     // TODO: Create checkout session
+    // const baseUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     // const session = await stripe.checkout.sessions.create({
     //   payment_method_types: ["card"],
     //   line_items: [
@@ -44,8 +45,8 @@ export async function POST(request: NextRequest) {
     //     },
     //   ],
     //   mode: "payment",
-    //   success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/?session_id={CHECKOUT_SESSION_ID}`,
-    //   cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/`,
+    //   success_url: `${baseUrl}/?session_id={CHECKOUT_SESSION_ID}`,
+    //   cancel_url: `${baseUrl}/`,
     // });
 
     // Mock response for development
@@ -53,10 +54,15 @@ export async function POST(request: NextRequest) {
     const mockSessionId = `cs_test_${Date.now()}`;
     const mockSessionUrl = `https://checkout.stripe.com/pay/${mockSessionId}`;
 
+    // Get the base URL from the request (works in both dev and production)
+    const baseUrl = request.nextUrl.origin || 
+                    process.env.NEXT_PUBLIC_APP_URL || 
+                    "http://localhost:3000";
+
     // For development: simulate successful payment by redirecting with session_id
     // In production, remove this and use the actual Stripe redirect
     return NextResponse.json({
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/?session_id=${mockSessionId}`,
+      url: `${baseUrl}/?session_id=${mockSessionId}`,
       sessionId: mockSessionId,
     });
 
