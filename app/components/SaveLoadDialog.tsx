@@ -53,16 +53,36 @@ export function SaveLoadDialog({
   const isRTL = uiLanguage === "ar";
 
   const loadSavedLetters = () => {
+    // Check if localStorage is available
+    if (typeof window === "undefined" || !window.localStorage) {
+      console.warn("Local storage is not available");
+      setSavedLetters([]);
+      return;
+    }
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const letters = JSON.parse(stored) as SavedLetter[];
-        // Sort by timestamp, newest first
-        letters.sort((a, b) => b.timestamp - a.timestamp);
-        setSavedLetters(letters);
+        // Validate that it's an array
+        if (Array.isArray(letters)) {
+          // Sort by timestamp, newest first
+          letters.sort((a, b) => b.timestamp - a.timestamp);
+          setSavedLetters(letters);
+        } else {
+          console.warn("Invalid saved letters format, resetting");
+          localStorage.removeItem(STORAGE_KEY);
+          setSavedLetters([]);
+        }
       }
     } catch (error) {
       console.error("Error loading saved letters:", error);
+      // If there's corrupted data, remove it
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // Ignore errors when removing
+      }
       setSavedLetters([]);
     }
   };
@@ -79,6 +99,12 @@ export function SaveLoadDialog({
   const handleSave = () => {
     if (!saveName.trim() || !currentLetterData || !onSave) return;
 
+    // Check if localStorage is available
+    if (typeof window === "undefined" || !window.localStorage) {
+      alert(uiLanguage === "ar" ? "التخزين المحلي غير متاح" : "Local storage is not available");
+      return;
+    }
+
     const newLetter: SavedLetter = {
       id: Date.now().toString(),
       name: saveName.trim(),
@@ -91,12 +117,36 @@ export function SaveLoadDialog({
     const limited = updated.slice(0, 20);
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
+      const serialized = JSON.stringify(limited);
+      
+      // Check if data is too large (localStorage typically has 5-10MB limit)
+      if (serialized.length > 5 * 1024 * 1024) {
+        alert(uiLanguage === "ar" ? "البيانات كبيرة جداً للحفظ. يرجى تقليل عدد الرسائل المحفوظة." : "Data is too large to save. Please reduce the number of saved letters.");
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, serialized);
       onSave(saveName.trim());
       onClose();
     } catch (error) {
       console.error("Error saving letter:", error);
-      alert(uiLanguage === "ar" ? "حدث خطأ أثناء الحفظ" : "An error occurred while saving");
+      
+      // Handle specific error types
+      let errorMessage = uiLanguage === "ar" ? "حدث خطأ أثناء الحفظ" : "An error occurred while saving";
+      
+      if (error instanceof DOMException) {
+        if (error.name === "QuotaExceededError" || error.code === 22) {
+          errorMessage = uiLanguage === "ar" 
+            ? "تم تجاوز حد التخزين. يرجى حذف بعض الرسائل المحفوظة." 
+            : "Storage quota exceeded. Please delete some saved letters.";
+        } else if (error.name === "SecurityError" || error.code === 18) {
+          errorMessage = uiLanguage === "ar" 
+            ? "خطأ في الأمان: لا يمكن الوصول إلى التخزين المحلي" 
+            : "Security error: Cannot access local storage";
+        }
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -112,13 +162,18 @@ export function SaveLoadDialog({
     if (confirm(uiLanguage === "ar" ? "هل أنت متأكد من حذف هذه الرسالة؟" : "Are you sure you want to delete this letter?")) {
       const updated = savedLetters.filter((l) => l.id !== id);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        setSavedLetters(updated);
-        if (selectedLetter?.id === id) {
-          setSelectedLetter(null);
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+          setSavedLetters(updated);
+          if (selectedLetter?.id === id) {
+            setSelectedLetter(null);
+          }
+        } else {
+          alert(uiLanguage === "ar" ? "التخزين المحلي غير متاح" : "Local storage is not available");
         }
       } catch (error) {
         console.error("Error deleting letter:", error);
+        alert(uiLanguage === "ar" ? "حدث خطأ أثناء الحذف" : "An error occurred while deleting");
       }
     }
   };
@@ -136,6 +191,12 @@ export function SaveLoadDialog({
   };
 
   const handleImport = () => {
+    // Check if localStorage is available
+    if (typeof window === "undefined" || !window.localStorage) {
+      alert(uiLanguage === "ar" ? "التخزين المحلي غير متاح" : "Local storage is not available");
+      return;
+    }
+
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "application/json";
@@ -149,17 +210,46 @@ export function SaveLoadDialog({
             if (letter.data && letter.name) {
               const updated = [letter, ...savedLetters.filter((l) => l.id !== letter.id)];
               const limited = updated.slice(0, 20);
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
-              loadSavedLetters();
-              if (onLoad) {
-                onLoad(letter);
-                onClose();
+              
+              try {
+                const serialized = JSON.stringify(limited);
+                if (serialized.length > 5 * 1024 * 1024) {
+                  alert(uiLanguage === "ar" 
+                    ? "البيانات كبيرة جداً للحفظ. يرجى حذف بعض الرسائل المحفوظة." 
+                    : "Data is too large to save. Please reduce the number of saved letters.");
+                  return;
+                }
+                
+                localStorage.setItem(STORAGE_KEY, serialized);
+                loadSavedLetters();
+                if (onLoad) {
+                  onLoad(letter);
+                  onClose();
+                }
+              } catch (storageError) {
+                console.error("Error saving imported letter:", storageError);
+                let errorMessage = uiLanguage === "ar" ? "حدث خطأ أثناء حفظ الرسالة المستوردة" : "An error occurred while saving imported letter";
+                
+                if (storageError instanceof DOMException) {
+                  if (storageError.name === "QuotaExceededError" || storageError.code === 22) {
+                    errorMessage = uiLanguage === "ar" 
+                      ? "تم تجاوز حد التخزين. يرجى حذف بعض الرسائل المحفوظة." 
+                      : "Storage quota exceeded. Please delete some saved letters.";
+                  }
+                }
+                
+                alert(errorMessage);
               }
+            } else {
+              alert(uiLanguage === "ar" ? "ملف غير صالح: البيانات ناقصة" : "Invalid file: Missing required data");
             }
           } catch (error) {
             console.error("Error importing letter:", error);
             alert(uiLanguage === "ar" ? "ملف غير صالح" : "Invalid file");
           }
+        };
+        reader.onerror = () => {
+          alert(uiLanguage === "ar" ? "حدث خطأ أثناء قراءة الملف" : "Error reading file");
         };
         reader.readAsText(file);
       }

@@ -35,14 +35,16 @@ export function getChromeExecutablePath(): string | undefined {
     return undefined;
   }
 
-  // Vercel/Netlify - Try to find Chrome in common paths
+  // Vercel/Netlify - Try to find Chrome in common paths first
+  // Vercel provides Chrome, so prefer system Chrome over @sparticuz/chromium
   if (process.env.VERCEL || process.env.NETLIFY) {
-    // Try common paths
+    // Try common paths - Vercel typically has Chrome at these locations
     const possiblePaths = [
       "/usr/bin/google-chrome-stable",
       "/usr/bin/google-chrome",
       "/usr/bin/chromium-browser",
       "/usr/bin/chromium",
+      "/opt/google/chrome/chrome", // Alternative Vercel path
     ];
     
     for (const path of possiblePaths) {
@@ -56,6 +58,7 @@ export function getChromeExecutablePath(): string | undefined {
     if (!chromium) {
       console.warn("[Puppeteer] Chrome not found and @sparticuz/chromium not installed. Consider installing: npm install @sparticuz/chromium");
     }
+    // Return undefined to allow @sparticuz/chromium fallback
     return undefined;
   }
 
@@ -105,10 +108,21 @@ export function getChromeExecutablePath(): string | undefined {
  * Get Puppeteer launch options for current environment
  */
 export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOptions> {
-  const isServerless = process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME;
+  const isVercel = process.env.VERCEL;
+  const isNetlify = process.env.NETLIFY;
+  const isLambda = process.env.AWS_LAMBDA_FUNCTION_NAME;
+  const isServerless = isVercel || isNetlify || isLambda;
   
-  // Use @sparticuz/chromium for serverless if available
-  if (isServerless && chromium) {
+  // For Vercel, prefer system Chrome over @sparticuz/chromium
+  // Vercel provides Chrome with all required libraries
+  const executablePath = getChromeExecutablePath();
+  
+  // Only use @sparticuz/chromium if:
+  // 1. We're on AWS Lambda (not Vercel/Netlify)
+  // 2. OR system Chrome is not found AND @sparticuz/chromium is available
+  const shouldUseChromium = (isLambda || (!executablePath && chromium)) && chromium;
+  
+  if (shouldUseChromium) {
     // Disable graphics for serverless (setGraphicsMode is a property, not a function)
     if (typeof chromium.setGraphicsMode !== "undefined") {
       chromium.setGraphicsMode = false;
@@ -121,8 +135,7 @@ export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOption
     };
   }
 
-  // Fallback to system Chrome
-  const executablePath = getChromeExecutablePath();
+  // Use system Chrome (preferred for Vercel/Netlify)
   const args = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
