@@ -4,12 +4,9 @@
  */
 
 import { existsSync } from "fs";
+import type { LaunchOptions } from "puppeteer-core";
 
-export interface PuppeteerLaunchOptions {
-  executablePath?: string;
-  args: string[];
-  headless: boolean | "new";
-}
+export type PuppeteerLaunchOptions = LaunchOptions;
 
 /**
  * Get Chrome/Chromium executable path based on environment
@@ -108,6 +105,6 @@ export function getPuppeteerLaunchOptions(): PuppeteerLaunchOptions {
   return {
     executablePath,
     args,
-    headless: "new",
+    headless: true, // Use boolean for compatibility with Puppeteer types
   };
 }
