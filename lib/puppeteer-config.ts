@@ -167,7 +167,6 @@ export async function getPuppeteerLaunchOptions(): Promise<PuppeteerLaunchOption
         defaultViewport: chromium.defaultViewport || { width: 1920, height: 1080 },
         executablePath: chromiumPath,
         headless: chromium.headless !== false, // Default to true
-        ignoreHTTPSErrors: true, // Important for serverless
       };
     } catch (chromiumError) {
       console.error(`[Puppeteer] Failed to configure @sparticuz/chromium:`, chromiumError);
