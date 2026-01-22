@@ -389,7 +389,19 @@ function HomeContent() {
     // This callback is just for notification if needed
   };
 
-  const handleLoadLetter = (letter: { data: any }) => {
+  const handleLoadLetter = (letter: { 
+    data: {
+      content?: string;
+      date?: string;
+      recipientTitle?: string;
+      recipientName?: string;
+      recipientOrganization?: string;
+      subject?: string;
+      signature?: string;
+      closing?: string;
+      language?: "Arabic" | "English";
+    }
+  }) => {
     setLetterContent(letter.data.content || "");
     setLetterDate(letter.data.date || "");
     setLetterRecipientTitle(letter.data.recipientTitle || "");
